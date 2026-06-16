@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BJJ Tracker — EOS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --red: #C0392B;
+    --red-dim: #8B1A11;
+    --red-glow: rgba(192,57,43,0.18);
+    --bg: #0D0D0D;
+    --bg2: #141414;
+    --bg3: #1C1C1C;
+    --bg4: #242424;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #F0F0F0;
+    --text2: #999;
+    --text3: #555;
+    --upper: #1A3A5C;
+    --upper-accent: #4A9EE8;
+    --lower: #1A3A1A;
+    --lower-accent: #5DB85D;
+    --yard: #2A1A4A;
+    --yard-accent: #9B87D6;
+    --recovery: #3A1A2A;
+    --recovery-accent: #D687B8;
+    --tag-chest: rgba(157,78,221,0.2);
+    --tag-chest-t: #C49BE8;
+    --tag-grip: rgba(74,158,232,0.2);
+    --tag-grip-t: #4A9EE8;
+    --tag-plyo: rgba(93,184,93,0.2);
+    --tag-plyo-t: #5DB85D;
+    --tag-iso: rgba(232,180,74,0.2);
+    --tag-iso-t: #E8B44A;
+    --tag-key: rgba(192,57,43,0.2);
+    --tag-key-t: #E87A6E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--red);
+  }
+  .logo-sub { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-top: -2px; }
+  .week-badge {
+    background: var(--red-glow);
+    border: 1px solid var(--red-dim);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* FIGHT CAMP PROGRESS */
+  .camp-bar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+  }
+  .camp-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .camp-label span { color: var(--text2); }
+  .days-row { display: flex; gap: 6px; }
+  .day-dot {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--bg4);
+    transition: background 0.3s;
+    cursor: pointer;
+    position: relative;
+  }
+  .day-dot.done { background: var(--red); }
+  .day-dot.today { background: var(--bg4); border: 1px solid var(--red); }
+  .day-dot-label {
+    text-align: center;
+    font-size: 9px;
+    color: var(--text3);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .day-dot-wrap { flex: 1; }
+
+  /* DAY TABS */
+  .tabs-wrap {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--text); border-bottom-color: var(--red); }
+
+  /* MAIN CONTENT */
+  .main { padding: 20px; max-width: 900px; margin: 0 auto; }
+
+  /* DAY HEADER */
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .day-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+  }
+  .day-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .complete-btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .complete-btn:hover { background: #E74C3C; transform: translateY(-1px); }
+  .complete-btn.done { background: var(--bg4); color: var(--text2); border: 1px solid var(--border2); }
+
+  /* SESSION BLOCK */
+  .session-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .block-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+  .block-header:hover { background: rgba(255,255,255,0.02); }
+  .block-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .block-chevron { color: var(--text3); font-size: 12px; transition: transform 0.2s; }
+  .block-chevron.open { transform: rotate(180deg); }
+  .block-body { padding: 0 16px 16px; }
+
+  /* COLOR VARIANTS */
+  .block-upper .block-header { border-left: 3px solid var(--upper-accent); }
+  .block-lower .block-header { border-left: 3px solid var(--lower-accent); }
+  .block-yard .block-header { border-left: 3px solid var(--yard-accent); }
+  .block-recovery .block-header { border-left: 3px solid var(--recovery-accent); }
+  .block-upper .block-title { color: var(--upper-accent); }
+  .block-lower .block-title { color: var(--lower-accent); }
+  .block-yard .block-title { color: var(--yard-accent); }
+  .block-recovery .block-title { color: var(--recovery-accent); }
+
+  /* EXERCISE ROW */
+  .ex-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ex-row:last-child { border-bottom: none; }
+  .ex-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .ex-name { font-weight: 600; font-size: 13px; }
+  .tag {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tag-chest { background: var(--tag-chest); color: var(--tag-chest-t); }
+  .tag-grip { background: var(--tag-grip); color: var(--tag-grip-t); }
+  .tag-plyo { background: var(--tag-plyo); color: var(--tag-plyo-t); }
+  .tag-iso { background: var(--tag-iso); color: var(--tag-iso-t); }
+  .tag-key { background: var(--tag-key); color: var(--tag-key-t); }
+  .ex-prescribed { font-size: 11px; color: var(--text2); }
+
+  /* LOGGING */
+  .ex-log { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .log-input-group { display: flex; flex-direction: column; gap: 2px; }
+  .log-input-group label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .log-input {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    padding: 5px 8px;
+    width: 64px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .log-input:focus { border-color: var(--red-dim); }
+  .log-input.notes { width: 140px; }
+  .ex-note-input {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    padding: 5px 8px;
+    width: 100%;
+    outline: none;
+    margin-top: 6px;
+    transition: border-color 0.2s;
+  }
+  .ex-note-input:focus { border-color: var(--red-dim); }
+  .ex-note-input::placeholder { color: var(--text3); }
+
+  /* HISTORY */
+  .history-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+  }
+  .history-btn:hover { border-color: var(--red-dim); color: var(--text); }
+
+  /* SESSION NOTES */
+  .session-notes-wrap { margin-top: 16px; }
+  .session-notes-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .session-notes {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    padding: 10px 12px;
+    width: 100%;
+    min-height: 70px;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  .session-notes:focus { border-color: var(--red-dim); }
+  .session-notes::placeholder { color: var(--text3); }
+
+  /* HISTORY PANEL */
+  .history-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 16px;
+    padding: 16px;
+    display: none;
+  }
+  .history-panel.open { display: block; }
+  .history-title { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .history-entry {
+    padding: 10px;
+    background: var(--bg3);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .history-entry:last-child { margin-bottom: 0; }
+  .history-date { font-size: 10px; color: var(--text3); margin-bottom: 4px; }
+  .history-empty { color: var(--text3); font-size: 12px; font-style: italic; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--red);
+    line-height: 1;
+  }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; margin-bottom: 16px; }
+  .modal-close {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    margin-top: -4px;
+  }
+  .modal-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+  .modal-input:focus { border-color: var(--red-dim); }
+  .modal-btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .edit-ex-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .edit-ex-row:last-child { border-bottom: none; }
+  .edit-ex-name { flex: 1; font-size: 12px; }
+  .edit-ex-input {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    padding: 4px 7px;
+    width: 80px;
+    outline: none;
+  }
+  .add-ex-btn {
+    background: none;
+    border: 1px dashed var(--border2);
+    color: var(--text3);
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .add-ex-btn:hover { border-color: var(--red-dim); color: var(--text2); }
+
+  /* SAVE TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    display: none;
+    z-index: 300;
+    animation: fadeIn 0.2s;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .rules-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .rules-card h3 { font-size: 10px; color: var(--red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .rules-card li { font-size: 12px; color: var(--text2); margin-bottom: 4px; margin-left: 14px; line-height: 1.5; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div>
+      <div class="logo">BJJ TRACKER</div>
+      <div class="logo-sub">EOS Fitness × Jiu-Jitsu</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span class="week-badge" id="weekBadge">Semana 1</span>
+    <button class="history-btn" onclick="openEditModal()">✏️ Editar</button>
+    <button class="history-btn" onclick="showHistoryPanel()">📋 Historial</button>
+  </div>
+</div>
+
+<div class="camp-bar">
+  <div class="camp-label">Fight Camp Progress — Esta semana <span id="campCount">0/6 sesiones</span></div>
+  <div class="days-row" id="campDays"></div>
+</div>
+
+<div class="tabs-wrap" id="tabsWrap"></div>
+
+<div class="main" id="mainContent"></div>
+
+<div class="toast" id="toast">✓ Guardado</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEditModal()">×</button>
+    <div class="modal-title">EDITAR DÍA</div>
+    <div id="editModalBody"></div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeHistoryModal()">×</button>
+    <div class="modal-title">HISTORIAL COMPLETO</div>
+    <div id="historyModalBody"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────
+const PROGRAM = {
+  lunes: {
+    title: "UPPER A",
+    subtitle: "Lunes · Empuje + Tirón + Grip · 55 min",
+    color: "upper",
+    blocks: [
+      {
+        label: "Explosividad",
+        exercises: [
+          { name: "Plyo Push-up", prescribed: "3×5", tags: ["plyo"] },
+        ]
+      },
+      {
+        label: "Pecho + Empuje",
+        exercises: [
+          { name: "Bench Press", prescribed: "4×6–8 · RIR 2", tags: ["chest"] },
+          { name: "Incline Dumbbell Press", prescribed: "3×10 · RIR 2", tags: ["chest"] },
+          { name: "Dips", prescribed: "3×8–10 · RIR 2", tags: ["chest", "key"] },
+        ]
+      },
+      {
+        label: "Tirón + Grip",
+        exercises: [
+          { name: "Pull-ups", prescribed: "4×5–8 · RIR 2", tags: ["grip", "key"] },
+          { name: "Face Pulls", prescribed: "3×15", tags: [] },
+          { name: "Dead Hang", prescribed: "3×30–45 seg", tags: ["iso", "grip"] },
+        ]
+      }
+    ]
+  },
+  martes: {
+    title: "LOWER A",
+    subtitle: "Martes · Fuerza Base + Isométricos · 55 min",
+    color: "lower",
+    blocks: [
+      {
+        label: "Potencia",
+        exercises: [
+          { name: "Box Jump", prescribed: "3×4 · máx potencia", tags: ["plyo"] },
+        ]
+      },
+      {
+        label: "Fuerza Base",
+        exercises: [
+          { name: "Romanian Deadlift", prescribed: "4×6 · RIR 2", tags: ["key"] },
+          { name: "Bulgarian Split Squat", prescribed: "3×8/lado · RIR 2", tags: [] },
+          { name: "Hip Thrust", prescribed: "3×10 · explosivo arriba", tags: [] },
+        ]
+      },
+      {
+        label: "Isométricos + Accesorios",
+        exercises: [
+          { name: "Copenhagen Plank", prescribed: "3×25–30 seg/lado", tags: ["iso", "key"] },
+          { name: "Leg Curl", prescribed: "3×10", tags: [] },
+        ]
+      }
+    ]
+  },
+  miercoles: {
+    title: "MOVILIDAD + THE YARD",
+    subtitle: "Miércoles · Cardio BJJ específico · 45 min",
+    color: "yard",
+    blocks: [
+      {
+        label: "Movilidad · 25 min",
+        exercises: [
+          { name: "90/90 Hip Stretch", prescribed: "3×45 seg", tags: [] },
+          { name: "World's Greatest Stretch", prescribed: "3×8/lado", tags: [] },
+          { name: "Thoracic Rotation", prescribed: "3×10", tags: [] },
+          { name: "Hollow Hold", prescribed: "3×25 seg", tags: ["iso"] },
+          { name: "Dead Bug", prescribed: "3×10/lado", tags: [] },
+        ]
+      },
+      {
+        label: "The Yard · 20 min",
+        exercises: [
+          { name: "Sled Push", prescribed: "4×20 metros · moderado", tags: [] },
+          { name: "Battle Ropes", prescribed: "4×20 seg", tags: [] },
+          { name: "Farmer's Carry", prescribed: "3×20 metros", tags: ["grip"] },
+        ]
+      }
+    ]
+  },
+  jueves: {
+    title: "UPPER B",
+    subtitle: "Jueves · Vertical + Explosive Pull + Pecho · 55 min",
+    color: "upper",
+    blocks: [
+      {
+        label: "Explosividad + Grip",
+        exercises: [
+          { name: "Explosive Pull-up", prescribed: "4×3–5 · esternón a la barra", tags: ["plyo", "grip"] },
+        ]
+      },
+      {
+        label: "Empuje Vertical",
+        exercises: [
+          { name: "Overhead Press", prescribed: "4×6–8 · RIR 2", tags: [] },
+          { name: "Weighted Dips", prescribed: "3×6–8 · con peso", tags: ["chest"] },
+        ]
+      },
+      {
+        label: "Pecho — Forma",
+        exercises: [
+          { name: "Cable Fly (bajo a alto)", prescribed: "3×12–15", tags: ["chest"] },
+          { name: "Cable Fly (alto a bajo)", prescribed: "3×12–15", tags: ["chest"] },
+        ]
+      },
+      {
+        label: "Tirón + Grip",
+        exercises: [
+          { name: "Lat Pulldown / Cable Row Unilateral", prescribed: "3×10", tags: [] },
+          { name: "Farmer's Carry", prescribed: "3×20 metros", tags: ["grip"] },
+        ]
+      }
+    ]
+  },
+  viernes: {
+    title: "LOWER B",
+    subtitle: "Viernes · Potencia + Unilateral · 55 min",
+    color: "lower",
+    blocks: [
+      {
+        label: "Potencia",
+        exercises: [
+          { name: "Jump Squat", prescribed: "3×5 · máx altura", tags: ["plyo"] },
+        ]
+      },
+      {
+        label: "Fuerza + Unilateral",
+        exercises: [
+          { name: "Goblet Squat / Front Squat", prescribed: "4×8 · RIR 2", tags: [] },
+          { name: "Single Leg RDL", prescribed: "3×8/lado · RIR 2", tags: [] },
+          { name: "Leg Press", prescribed: "3×12", tags: [] },
+        ]
+      },
+      {
+        label: "Isométricos + Grip",
+        exercises: [
+          { name: "Wall Sit", prescribed: "2×45–60 seg", tags: ["iso"] },
+          { name: "Towel Pull-up / Bar Hang", prescribed: "2×30 seg", tags: ["grip"] },
+        ]
+      }
+    ]
+  },
+  sabado: {
+    title: "THE YARD LIGERO",
+    subtitle: "Sábado · Opcional · 20 min antes del BJJ 11:00",
+    color: "yard",
+    blocks: [
+      {
+        label: "Activación + Grip",
+        exercises: [
+          { name: "Sled Push ligero", prescribed: "3×20 metros · activación", tags: [] },
+          { name: "Dead Hang", prescribed: "3×max tiempo", tags: ["grip"] },
+          { name: "Ab Wheel / Pallof Press", prescribed: "3×10", tags: ["iso"] },
+        ]
+      }
+    ]
+  },
+  domingo: {
+    title: "DESCANSO ACTIVO",
+    subtitle: "Domingo · Recuperación · Sin carga",
+    color: "recovery",
+    blocks: [
+      {
+        label: "Recuperación",
+        exercises: [
+          { name: "Sauna", prescribed: "15–20 min", tags: [] },
+          { name: "Caminata tranquila", prescribed: "30–45 min", tags: [] },
+          { name: "Stretching cadera + columna", prescribed: "10 min", tags: [] },
+        ]
+      }
+    ]
+  }
+};
+
+const DAYS = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+const DAY_LABELS = { lunes:"Lun",martes:"Mar",miercoles:"Mié",jueves:"Jue",viernes:"Vie",sabado:"Sáb",domingo:"Dom" };
+const DAY_FULL = { lunes:"Lunes",martes:"Martes",miercoles:"Miércoles",jueves:"Jueves",viernes:"Viernes",sabado:"Sábado",domingo:"Domingo" };
+
+let activeDay = "lunes";
+let expandedBlocks = {};
+let state = {};
+let sessions = {};
+let completedDays = {};
+let customProgram = {};
+
+// ─── STORAGE ────────────────────────────────────────────────────────
+async function loadState() {
+  try {
+    const r = await window.storage.get('bjj_state');
+    if (r) state = JSON.parse(r.value);
+  } catch(e) { state = {}; }
+  try {
+    const r = await window.storage.get('bjj_sessions');
+    if (r) sessions = JSON.parse(r.value);
+  } catch(e) { sessions = {}; }
+  try {
+    const r = await window.storage.get('bjj_completed');
+    if (r) completedDays = JSON.parse(r.value);
+  } catch(e) { completedDays = {}; }
+  try {
+    const r = await window.storage.get('bjj_custom');
+    if (r) customProgram = JSON.parse(r.value);
+  } catch(e) { customProgram = {}; }
+}
+
+async function saveState() {
+  try {
+    await window.storage.set('bjj_state', JSON.stringify(state));
+    await window.storage.set('bjj_sessions', JSON.stringify(sessions));
+    await window.storage.set('bjj_completed', JSON.stringify(completedDays));
+    await window.storage.set('bjj_custom', JSON.stringify(customProgram));
+    showToast();
+  } catch(e) {}
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 1500);
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────────
+function getProgram(day) {
+  if (customProgram[day]) {
+    return { ...PROGRAM[day], blocks: customProgram[day] };
+  }
+  return PROGRAM[day];
+}
+
+function todayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function weekKey() {
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  return Math.ceil((((now - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+}
+
+function stateKey(day, blockIdx, exIdx, field) {
+  return `${day}_${blockIdx}_${exIdx}_${field}`;
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────
+function renderCampBar() {
+  const wrap = document.getElementById('campDays');
+  wrap.innerHTML = '';
+  const today = new Date().getDay();
+  const dayOrder = [1,2,3,4,5,6,0]; // Mon-Sun
+  let done = 0;
+  DAYS.forEach((d, i) => {
+    const isToday = dayOrder[i] === today;
+    const isDone = completedDays[d] === todayKey() || 
+      (Object.keys(completedDays).includes(d) && isThisWeek(completedDays[d]));
+    if (isDone) done++;
+    const wrap2 = document.createElement('div');
+    wrap2.className = 'day-dot-wrap';
+    wrap2.innerHTML = `
+      <div class="day-dot ${isDone?'done':''} ${isToday&&!isDone?'today':''}" onclick="switchTab('${d}')"></div>
+      <div class="day-dot-label">${DAY_LABELS[d]}</div>
+    `;
+    wrap.appendChild(wrap2);
+  });
+  const skipSun = DAYS.slice(0,6);
+  const doneCount = skipSun.filter(d => completedDays[d] && isThisWeek(completedDays[d])).length;
+  document.getElementById('campCount').textContent = `${doneCount}/6 sesiones`;
+  document.getElementById('weekBadge').textContent = `Semana ${weekKey() % 52 || 1}`;
+}
+
+function isThisWeek(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay() + 1);
+  startOfWeek.setHours(0,0,0,0);
+  return d >= startOfWeek;
+}
+
+function renderTabs() {
+  const wrap = document.getElementById('tabsWrap');
+  wrap.innerHTML = '';
+  DAYS.forEach(d => {
+    const t = document.createElement('div');
+    t.className = `tab ${d === activeDay ? 'active' : ''}`;
+    t.textContent = DAY_FULL[d];
+    t.onclick = () => switchTab(d);
+    wrap.appendChild(t);
+  });
+}
+
+function switchTab(day) {
+  activeDay = day;
+  renderTabs();
+  renderMain();
+}
+
+function tagHTML(tags) {
+  return (tags||[]).map(t => {
+    const map = { chest:'Pecho',grip:'Grip',plyo:'Plyo',iso:'ISO',key:'BJJ ★' };
+    return `<span class="tag tag-${t==='key'?'key':t}">${map[t]||t}</span>`;
+  }).join('');
+}
+
+function renderMain() {
+  const day = activeDay;
+  const prog = getProgram(day);
+  const main = document.getElementById('mainContent');
+  const todayCompleted = completedDays[day] && isThisWeek(completedDays[day]);
+
+  // Stats
+  const weekSessions = DAYS.slice(0,6).filter(d => completedDays[d] && isThisWeek(completedDays[d])).length;
+  const totalSessions = Object.values(completedDays).filter(Boolean).length;
+  const totalExercises = Object.keys(state).length;
+
+  let html = `
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">${weekSessions}</div>
+        <div class="stat-label">Sesiones esta semana</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${totalSessions}</div>
+        <div class="stat-label">Total sesiones</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${Object.keys(sessions).length}</div>
+        <div class="stat-label">Días en historial</div>
+      </div>
+    </div>
+
+    <div class="day-header">
+      <div>
+        <div class="day-title" style="color:${colorAccent(prog.color)}">${prog.title}</div>
+        <div class="day-meta">${prog.subtitle}</div>
+      </div>
+      <button class="complete-btn ${todayCompleted?'done':''}" onclick="completeDay('${day}')">
+        ${todayCompleted ? '✓ Completado' : 'Marcar completo'}
+      </button>
+    </div>
+  `;
+
+  // Reglas si es lunes
+  if (day === 'lunes') {
+    html += `
+      <div class="rules-card">
+        <h3>Reglas de oro</h3>
+        <ul>
+          <li>Nunca al fallo. Siempre RIR 2 (deja 2 reps en el tanque).</li>
+          <li>Explosivo siempre primero. Potencia no se trabaja fatigado.</li>
+          <li>BJJ es el plato fuerte. El gym no puede arruinar el BJJ.</li>
+          <li>The Tank post BJJ no es opcional con doble sesión.</li>
+          <li>El domingo es sagrado. Sin carga.</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  // Blocks
+  prog.blocks.forEach((block, bi) => {
+    const blockKey = `${day}_${bi}`;
+    const isOpen = expandedBlocks[blockKey] !== false;
+    html += `
+      <div class="session-block block-${prog.color}">
+        <div class="block-header" onclick="toggleBlock('${blockKey}')">
+          <div class="block-title">${block.label}</div>
+          <div class="block-chevron ${isOpen?'open':''}">▼</div>
+        </div>
+        <div class="block-body" ${isOpen?'':'style="display:none"'}>
+    `;
+
+    block.exercises.forEach((ex, ei) => {
+      const setsKey = stateKey(day, bi, ei, 'sets');
+      const repsKey = stateKey(day, bi, ei, 'reps');
+      const weightKey = stateKey(day, bi, ei, 'weight');
+      const noteKey = stateKey(day, bi, ei, 'note');
+
+      html += `
+        <div class="ex-row">
+          <div>
+            <div class="ex-name-row">
+              <span class="ex-name">${ex.name}</span>
+              ${tagHTML(ex.tags)}
+            </div>
+            <div class="ex-prescribed">${ex.prescribed}</div>
+            <div class="ex-log">
+              <div class="log-input-group">
+                <label>Sets</label>
+                <input class="log-input" type="number" placeholder="—" value="${state[setsKey]||''}" 
+                  onchange="updateState('${setsKey}',this.value)" min="0">
+              </div>
+              <div class="log-input-group">
+                <label>Reps</label>
+                <input class="log-input" type="text" placeholder="—" value="${state[repsKey]||''}" 
+                  onchange="updateState('${repsKey}',this.value)">
+              </div>
+              <div class="log-input-group">
+                <label>Peso (lb)</label>
+                <input class="log-input" type="number" placeholder="—" value="${state[weightKey]||''}" 
+                  onchange="updateState('${weightKey}',this.value)" min="0">
+              </div>
+            </div>
+            <input class="ex-note-input" type="text" placeholder="Nota rápida (e.g. se sintió pesado, subir peso próxima vez...)" 
+              value="${state[noteKey]||''}" onchange="updateState('${noteKey}',this.value)">
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div></div>`;
+  });
+
+  // Session notes
+  const sessionNoteKey = `${day}_session_note_${todayKey()}`;
+  html += `
+    <div class="session-notes-wrap">
+      <div class="session-notes-label">Notas de la sesión de hoy</div>
+      <textarea class="session-notes" placeholder="¿Cómo te sentiste? ¿Algo que ajustar? ¿Energía pre-BJJ?..." 
+        onchange="updateState('${sessionNoteKey}',this.value)">${state[sessionNoteKey]||''}</textarea>
+    </div>
+  `;
+
+  // History for this day
+  const dayHistory = (sessions[day] || []).slice().reverse().slice(0, 5);
+  if (dayHistory.length > 0) {
+    html += `
+      <div class="history-panel open" style="margin-top:16px;">
+        <div class="history-title">Últimas sesiones — ${DAY_FULL[day]}</div>
+    `;
+    dayHistory.forEach(s => {
+      html += `
+        <div class="history-entry">
+          <div class="history-date">${s.date}</div>
+          <div>${s.note || '<span style="color:var(--text3);font-style:italic;">Sin nota</span>'}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  main.innerHTML = html;
+}
+
+function colorAccent(color) {
+  const map = { upper:'var(--upper-accent)',lower:'var(--lower-accent)',yard:'var(--yard-accent)',recovery:'var(--recovery-accent)' };
+  return map[color] || 'var(--text)';
+}
+
+function toggleBlock(key) {
+  expandedBlocks[key] = expandedBlocks[key] === false ? true : false;
+  renderMain();
+}
+
+function updateState(key, value) {
+  state[key] = value;
+  saveState();
+}
+
+async function completeDay(day) {
+  const prog = getProgram(day);
+  const already = completedDays[day] && isThisWeek(completedDays[day]);
+  if (already) {
+    completedDays[day] = null;
+  } else {
+    completedDays[day] = todayKey();
+    // Save session snapshot
+    if (!sessions[day]) sessions[day] = [];
+    const sessionNoteKey = `${day}_session_note_${todayKey()}`;
+    sessions[day].push({
+      date: new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+      note: state[sessionNoteKey] || ''
+    });
+    if (sessions[day].length > 20) sessions[day] = sessions[day].slice(-20);
+  }
+  await saveState();
+  renderCampBar();
+  renderMain();
+}
+
+// ─── EDIT MODAL ─────────────────────────────────────────────────────
+function openEditModal() {
+  const day = activeDay;
+  const prog = getProgram(day);
+  const body = document.getElementById('editModalBody');
+  let html = `<div style="font-size:11px;color:var(--text2);margin-bottom:12px;">Edita los ejercicios y reps para <strong>${DAY_FULL[day]}</strong>. Los cambios se guardan automáticamente.</div>`;
+
+  prog.blocks.forEach((block, bi) => {
+    html += `<div style="margin-bottom:12px;">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${block.label}</div>`;
+    block.exercises.forEach((ex, ei) => {
+      html += `
+        <div class="edit-ex-row">
+          <input class="modal-input" style="margin-bottom:0;font-size:12px;" type="text" 
+            value="${ex.name}" 
+            onchange="updateExercise('${day}',${bi},${ei},'name',this.value)"
+            placeholder="Nombre del ejercicio">
+          <input class="edit-ex-input" type="text" 
+            value="${ex.prescribed}" 
+            onchange="updateExercise('${day}',${bi},${ei},'prescribed',this.value)"
+            placeholder="Sets×reps">
+        </div>
+      `;
+    });
+    html += `<button class="add-ex-btn" onclick="addExercise('${day}',${bi})">+ Agregar ejercicio</button>`;
+    html += `</div>`;
+  });
+
+  html += `<div style="margin-top:8px;font-size:11px;color:var(--text3);">Los cambios se aplican solo a tu versión del programa.</div>`;
+  body.innerHTML = html;
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('open');
+  renderMain();
+}
+
+function updateExercise(day, bi, ei, field, value) {
+  if (!customProgram[day]) {
+    customProgram[day] = JSON.parse(JSON.stringify(PROGRAM[day].blocks));
+  }
+  customProgram[day][bi].exercises[ei][field] = value;
+  saveState();
+}
+
+function addExercise(day, bi) {
+  if (!customProgram[day]) {
+    customProgram[day] = JSON.parse(JSON.stringify(PROGRAM[day].blocks));
+  }
+  customProgram[day][bi].exercises.push({ name: "Nuevo ejercicio", prescribed: "3×10", tags: [] });
+  saveState();
+  openEditModal();
+}
+
+// ─── HISTORY MODAL ──────────────────────────────────────────────────
+function showHistoryPanel() {
+  const body = document.getElementById('historyModalBody');
+  let html = '';
+  DAYS.forEach(d => {
+    const dayHistory = (sessions[d] || []).slice().reverse();
+    if (dayHistory.length === 0) return;
+    html += `<div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${DAY_FULL[d]} — ${PROGRAM[d].title}</div>`;
+    dayHistory.slice(0,8).forEach(s => {
+      html += `<div class="history-entry">
+        <div class="history-date">${s.date}</div>
+        <div>${s.note || '<span style="color:var(--text3);font-style:italic;">Sin nota</span>'}</div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  if (!html) html = '<div class="history-empty">Todavía no hay sesiones completadas. Marca tu primera sesión como completa para empezar el historial.</div>';
+  body.innerHTML = html;
+  document.getElementById('historyModal').classList.add('open');
+}
+
+function closeHistoryModal() {
+  document.getElementById('historyModal').classList.remove('open');
+}
+
+// Close modals on overlay click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+document.getElementById('historyModal').addEventListener('click', function(e) {
+  if (e.target === this) closeHistoryModal();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────
+async function init() {
+  await loadState();
+  renderCampBar();
+  renderTabs();
+  renderMain();
+}
+
+init();
+</script>
+</body>
+</html>
